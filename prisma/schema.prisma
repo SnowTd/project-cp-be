@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  userID String @id
+  name String
+  pictureUrl String
+  role String @default("member")
+  createAt DateTime @default(now())
+  subscription Subscription[]
+  Order Order[]
+  UserRegister UserRegister[]
+}
+
+model UserRegister {
+  id Int @id @default(autoincrement())
+  userID String
+  phoneNumber String
+  Address String
+  name String
+  Order Order[]
+
+  user User @relation(fields: [userID] , references: [userID])
+}
+
+
+model Order {
+  id Int @id @default(autoincrement())
+  userID String
+  status String @default("pending")
+  
+  typeShirt typeShirt[]
+  userRegister Int
+  createAt DateTime @default(now())
+
+  userIDregister UserRegister @relation(fields: [userRegister],references: [id])
+  user User @relation(fields: [userID],references: [userID])
+}
+
+model typeShirt {
+  id Int @id @default(autoincrement())
+  type String
+  amount Int
+  orderID Int
+  order Order @relation(fields: [orderID],references: [id])
+}
+
+model Subscription {
+  id            Int            @id @default(autoincrement())
+  startAt       DateTime       @default(now()) 
+  endAt         DateTime       
+  isActive      Boolean        @default(true) 
+  user          User           @relation(fields: [userID], references: [userID])
+  userID        String         
+}
