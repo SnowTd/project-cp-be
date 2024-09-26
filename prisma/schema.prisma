@@ -61,7 +61,8 @@ model typeShirt {
 model Subscription {
   id            Int            @id @default(autoincrement())
   startAt       DateTime       @default(now()) 
-  endAt         DateTime       
+  endAt         DateTime  
+  total Int     
   isActive      Boolean        @default(true) 
   user          User           @relation(fields: [userID], references: [userID])
   userID        String         

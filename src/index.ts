@@ -110,6 +110,7 @@ const app = new Elysia()
             subscription: true,
           },
         },
+        typeShirt: true,
       },
     })
 
@@ -117,13 +118,63 @@ const app = new Elysia()
       uid: user.userID,
       profile: user.user.pictureUrl,
       name: user.user.name,
-      subscription: user.user.subscription.length > 0 ? 'true' : 'false',
+      subscription: user.user.subscription.length > 0 ? true : false,
       date: user.createAt,
       address: user.userIDregister.Address,
       status: user.status,
+      skull: user.typeShirt,
+      order: user.id,
     }))
     return { response }
   })
+  .post(
+    '/type/:id',
+    async ({ params: { id }, db, body }) => {
+      const orderId = Number(id)
+      const { type, amount } = await body
+      const InsertType = await db.typeShirt.create({
+        data: {
+          type: type,
+          amount: amount,
+          orderID: orderId,
+        },
+      })
+    },
+    {
+      body: t.Object({
+        type: t.String(),
+        amount: t.Number(),
+      }),
+    }
+  )
+  .get('/type/:id', async ({ params: { id }, db }) => {
+    const orderId = Number(id)
+    const getTypeShirt = await db.typeShirt.findMany({
+      where: {
+        orderID: orderId,
+      },
+    })
+    return { getTypeShirt }
+  })
+  .delete(
+    '/type/:id',
+    async ({ params: { id }, db, body }) => {
+      const { typeid } = await body
+      const orderId = Number(id)
+      const deleteTypeShirt = await db.typeShirt.deleteMany({
+        where: {
+          orderID: orderId,
+          id: typeid,
+        },
+      })
+      return { deleteTypeShirt }
+    },
+    {
+      body: t.Object({
+        typeid: t.Number(),
+      }),
+    }
+  )
   .post(
     '/order',
     async ({ body, db }) => {
@@ -134,6 +185,7 @@ const app = new Elysia()
           userRegister,
         },
       })
+      return { message: 'success', createOrder: userID }
     },
     {
       body: t.Object({
