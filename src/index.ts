@@ -2,6 +2,7 @@ import { Elysia, t } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import axios from 'axios'
 import { PrismaClient } from '@prisma/client'
+import linehook from './linehook'
 const client = new PrismaClient()
 
 const app = new Elysia()
@@ -18,6 +19,7 @@ const app = new Elysia()
           data: {
             startAt: new Date(),
             endAt: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+            total: 0,
             isActive: true,
             userID: userID,
           },
@@ -101,6 +103,15 @@ const app = new Elysia()
       }),
     }
   )
+  .get('sub/:id', async ({ params: { id }, db }) => {
+    const check = await db.subscription.findFirst({
+      where: {
+        userID: id,
+      },
+    })
+
+    return { check }
+  })
   .get('/order', async ({ db }) => {
     const getOrder = await db.order.findMany({
       include: {
@@ -194,51 +205,7 @@ const app = new Elysia()
       }),
     }
   )
-  .post(
-    '/linehook',
-    async ({ body, db }) => {
-      const { destination, events } = await body
-      console.log(events)
-
-      const userID: string = events[0].source.userId
-      console.log(userID)
-      if (events[0].type === 'message') {
-        const messageRaw: string = events[0].message.text
-        const message = messageRaw.toLowerCase().trim()
-        console.log(message)
-        if (message === 'order') {
-          const userReg = await db.userRegister.findFirst({
-            where: {
-              userID: userID,
-            },
-          })
-          console.log(userReg)
-
-          if (!userReg) {
-            console.log('กรุณาสมัครก่อนครับ')
-
-            return { message: 'กรุณาสมัครก่อนครับ' }
-          }
-          const userRegId = userReg?.id
-          const createOrder = await db.order.create({
-            data: {
-              userID: userID,
-              userRegister: userRegId,
-            },
-          })
-          console.log('success')
-          return { status: true, message: 'create success' }
-        }
-      }
-      return { status: true }
-    },
-    {
-      body: t.Object({
-        destination: t.String(),
-        events: t.Any(),
-      }),
-    }
-  )
+  .use(linehook)
   .post(
     '/register',
     async ({ body, db }) => {
