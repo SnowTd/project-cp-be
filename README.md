@@ -1,15 +1,18 @@
-# Elysia with Bun runtime
+Project CP
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
-```bash
-bun create elysia ./elysia-example
-```
+frontend อยู่ที่ https://github.com/SnowTd/project-cp-fe.git
 
-## Development
-To start the development server run:
-```bash
+git clone https://github.com/SnowTd/project-cp-be.git
+
+docker compose up -d รัน docker pgsql database
+
+bun install
+
 bun run dev
-```
 
-Open http://localhost:3000/ with your browser to see the result.
+setup env
+
+Tool
+elysia
+pgsql
+prisma
